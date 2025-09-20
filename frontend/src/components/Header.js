@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, User, Heart } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, User, Heart, LogIn, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { categories } from '../data/mockData';
 
 const Header = () => {
@@ -13,6 +15,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { getCartItemsCount } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -20,6 +23,11 @@ const Header = () => {
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const navigation = [
@@ -105,10 +113,54 @@ const Header = () => {
               <Heart className="h-5 w-5" />
             </Button>
 
-            {/* Account */}
-            <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
-              <User className="h-5 w-5" />
-            </Button>
+            {/* Account Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-gray-900 border-gray-700" align="end">
+                {isAuthenticated ? (
+                  <>
+                    <div className="px-2 py-1.5 text-sm text-gray-300">
+                      <div className="font-medium text-white">{user?.name}</div>
+                      <div className="text-gray-400">{user?.email}</div>
+                    </div>
+                    <DropdownMenuSeparator className="bg-gray-700" />
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+                      <Link to="/profile">My Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+                      <Link to="/orders">My Orders</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+                      <Link to="/wishlist">Wishlist</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-gray-700" />
+                    <DropdownMenuItem 
+                      onClick={handleLogout}
+                      className="text-red-400 hover:text-red-300 hover:bg-gray-800 cursor-pointer"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+                      <Link to="/login">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Sign In
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+                      <Link to="/login">Create Account</Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Cart */}
             <Link to="/cart">
@@ -133,6 +185,22 @@ const Header = () => {
                 <div className="flex items-center justify-between py-4 border-b border-gray-800">
                   <span className="text-lg font-semibold">Menu</span>
                 </div>
+                
+                {/* User Info - Mobile */}
+                {isAuthenticated && (
+                  <div className="py-4 border-b border-gray-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-red-600 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-white font-medium">{user?.name}</div>
+                        <div className="text-gray-400 text-sm">{user?.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <nav className="flex flex-col gap-4 mt-6">
                   {navigation.map((item) => (
                     <Link
@@ -144,6 +212,33 @@ const Header = () => {
                       {item.name}
                     </Link>
                   ))}
+                  
+                  {!isAuthenticated && (
+                    <>
+                      <Link
+                        to="/login"
+                        className="text-purple-400 hover:text-purple-300 transition-colors py-2 border-b border-gray-800"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <LogIn className="h-4 w-4 inline mr-2" />
+                        Sign In
+                      </Link>
+                    </>
+                  )}
+                  
+                  {isAuthenticated && (
+                    <Button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      variant="ghost"
+                      className="justify-start text-red-400 hover:text-red-300 p-0"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>

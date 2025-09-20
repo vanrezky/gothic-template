@@ -10,29 +10,43 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderListPage from "./pages/OrderListPage";
+import LoginPage from "./pages/LoginPage";
 import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
     <div className="App min-h-screen bg-gray-950 text-gray-100">
-      <CartProvider>
-        <BrowserRouter>
-          <Header />
-          <main className="min-h-screen">
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/products" element={<ProductListPage />} />
-              <Route path="/products/:category" element={<ProductListPage />} />
-              <Route path="/product/:id" element={<ProductDetailPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/orders" element={<OrderListPage />} />
+              {/* Login page without header/footer */}
+              <Route path="/login" element={<LoginPage />} />
+              
+              {/* Main app routes with header/footer */}
+              <Route path="/*" element={
+                <>
+                  <Header />
+                  <main className="min-h-screen">
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/products" element={<ProductListPage />} />
+                      <Route path="/products/:category" element={<ProductListPage />} />
+                      <Route path="/product/:id" element={<ProductDetailPage />} />
+                      <Route path="/cart" element={<CartPage />} />
+                      <Route path="/checkout" element={<CheckoutPage />} />
+                      <Route path="/orders" element={<OrderListPage />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </>
+              } />
             </Routes>
-          </main>
-          <Footer />
-          <Toaster />
-        </BrowserRouter>
-      </CartProvider>
+            <Toaster />
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
     </div>
   );
 }
